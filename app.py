@@ -1,142 +1,39 @@
 import streamlit as st
-import random
 
-st.set_page_config(page_title="도박 게임 허브", page_icon="🎰")
+st.set_page_config(page_title="범인 찾기 게임", layout="centered")
 
-# 초기 세션
-if "balance" not in st.session_state:
-    st.session_state.balance = 100000
-if "message" not in st.session_state:
-    st.session_state.message = ""
+st.title("🕵️ 범인 찾기 게임: 대북송금 의혹")
 
-# 결과 출력 함수
-def show_result(msg):
-    st.session_state.message = f"{msg}\n💵 현재 잔액: {st.session_state.balance:,}원"
-    st.rerun()
+st.markdown("""
+---
+대한민국 어딘가에서 **대북송금**이 이루어졌다...  
+과연, 그 책임자는 누구일까?
 
-# 베팅 입력
-def get_bet():
-    return st.number_input("💰 베팅 금액:", min_value=1, max_value=st.session_state.balance, step=1000)
+**아래의 인물들 중에서 범인을 지목하세요.**  
+(※ 본 게임은 창작/풍자적 콘텐츠이며 실제 사실과 무관합니다.)
+---
+""")
 
-# 게임 함수들
-def slot_machine(bet):
-    symbols = ["🍒", "🔔", "🍋", "💎", "7️⃣", "🍀"]
-    result = [random.choice(symbols) for _ in range(3)]
-    if result.count(result[0]) == 3:
-        st.session_state.balance += bet * 4
-        msg = f"{' | '.join(result)}\n🎉 잭팟! 5배 당첨!"
-    elif result.count(result[0]) == 2 or result.count(result[1]) == 2:
-        st.session_state.balance += bet
-        msg = f"{' | '.join(result)}\n😎 두 개 일치! 2배 당첨!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"{' | '.join(result)}\n💸 꽝입니다."
-    show_result(msg)
+suspect = st.radio("🕵️ 범인으로 의심되는 사람은?", [
+    "1. 이재명",
+    "2. 문재인",
+    "3. 윤석열",
+    "4. 박근혜"
+])
 
-def high_or_low(bet, guess):
-    user = random.randint(1, 13)
-    comp = random.randint(1, 13)
-    if (guess == "high" and comp > user) or (guess == "low" and comp < user):
-        st.session_state.balance += bet
-        msg = f"당신: {user}, 상대: {comp}\n🎉 맞췄습니다!"
-    elif comp == user:
-        msg = f"당신: {user}, 상대: {comp}\n😐 무승부!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"당신: {user}, 상대: {comp}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def dice_game(bet, guess):
-    roll = random.randint(1, 6)
-    if (roll % 2 == 0 and guess == "even") or (roll % 2 == 1 and guess == "odd"):
-        st.session_state.balance += bet
-        msg = f"🎲 주사위: {roll}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"🎲 주사위: {roll}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def roulette(bet, choice):
-    num = random.randint(0, 36)
-    color = random.choice(["red", "black"])
-    if choice.isdigit() and int(choice) == num:
-        st.session_state.balance += bet * 34
-        msg = f"🎯 룰렛: {num} ({color})\n🎉 숫자 정답! 35배!"
-    elif choice == color:
-        st.session_state.balance += bet
-        msg = f"🎯 룰렛: {num} ({color})\n🎉 색상 정답! 2배!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"🎯 룰렛: {num} ({color})\n❌ 틀렸습니다."
-    show_result(msg)
-
-def odd_even_sum(bet, user_num, guess):
-    comp = random.randint(1, 9)
-    total = user_num + comp
-    if (total % 2 == 0 and guess == "even") or (total % 2 == 1 and guess == "odd"):
-        st.session_state.balance += bet
-        msg = f"당신: {user_num}, 컴: {comp} → 합: {total}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"당신: {user_num}, 컴: {comp} → 합: {total}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def ladder_game(bet, choice):
-    result = random.choice(["left", "right"])
-    if choice == result:
-        st.session_state.balance += bet
-        msg = f"결과: {result}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"결과: {result}\n❌ 틀렸습니다."
-    show_result(msg)
-
-# 🖥️ UI
-st.title("🎰 도박 게임 허브 (1인용)")
-st.subheader(f"💵 현재 잔액: {st.session_state.balance:,}원")
-
-# 🛑 파산 시 안내
-if st.session_state.balance <= 0:
-    st.error("💸 파산! 잔액이 0원입니다.")
-    st.warning("📞 도박 중독이 의심되면 도움을 요청하세요. 상담번호: ☎️ 1336")
-    st.markdown("[👉 도박문제관리센터 바로가기](https://www.ncadd.or.kr)", unsafe_allow_html=True)
-    st.stop()
-
-# 게임 선택
-game = st.selectbox("🎮 게임을 선택하세요", ["슬롯머신", "하이/로우", "주사위 홀짝", "룰렛", "홀짝 합", "사다리"])
-bet = get_bet()
-
-# 게임 실행 UI
-if game == "슬롯머신":
-    if st.button("🎰 슬롯 돌리기"):
-        slot_machine(bet)
-
-elif game == "하이/로우":
-    guess = st.radio("상대가 높을까 낮을까?", ["high", "low"])
-    if st.button("🃏 예측하기"):
-        high_or_low(bet, guess)
-
-elif game == "주사위 홀짝":
-    guess = st.radio("홀수 or 짝수?", ["odd", "even"])
-    if st.button("🎲 던지기"):
-        dice_game(bet, guess)
-
-elif game == "룰렛":
-    choice = st.text_input("숫자(0~36) 또는 색상(red/black):").lower()
-    if st.button("🎡 돌리기"):
-        roulette(bet, choice)
-
-elif game == "홀짝 합":
-    user_num = st.number_input("당신의 숫자 (1~9)", min_value=1, max_value=9, step=1)
-    guess = st.radio("합은 홀수 or 짝수?", ["odd", "even"])
-    if st.button("⚖️ 예측하기"):
-        odd_even_sum(bet, user_num, guess)
-
-elif game == "사다리":
-    choice = st.radio("사다리 방향 선택", ["left", "right"])
-    if st.button("🪜 선택하기"):
-        ladder_game(bet, choice)
-
-# 결과 출력
-if st.session_state.message:
-    st.success(st.session_state.message)
+if st.button("🔍 범인 지목하기"):
+    if suspect == "2. 문재인":
+        st.success("🎯 당신의 선택: 문재인")
+        st.info("👉 하지만, 문재인은 **관련 혐의로 입건된 바 없습니다.**\n이 게임은 단순 풍자입니다.")
+    elif suspect == "1. 이재명":
+        st.success("🎯 당신의 선택: 이재명")
+        st.info("👉 실제로 **이화영 前부지사의 재판에서 관련 이름이 오르내리긴 했지만**, 혐의 확정은 아닙니다.")
+    elif suspect == "3. 윤석열":
+        st.success("🎯 당신의 선택: 윤석열")
+        st.info("👉 윤석열 대통령은 검사 출신으로, 관련된 송금과는 거리가 멉니다.")
+    elif suspect == "4. 박근혜":
+        st.success("🎯 당신의 선택: 박근혜")
+        st.info("👉 박근혜 전 대통령은 **다른 이유로 탄핵되었지만**, 대북송금 사건과는 무관합니다.")
+    
+    st.markdown("---")
+    st.markdown("🎲 **결론: 진실은 법정과 역사에 맡깁시다.** 이 게임은 어디까지나 패러디입니다.")
