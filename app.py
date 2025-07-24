@@ -38,7 +38,7 @@ if st.session_state.stage == "intro":
             st.session_state.stage = "fight"
         elif choice == "5. 그냥 뛰어간다":
             st.session_state.stage = "run"
-        st.experimental_rerun()
+        st.rerun()
 
 # Stage: 창문
 elif st.session_state.stage == "window":
@@ -47,7 +47,7 @@ elif st.session_state.stage == "window":
         st.session_state.jump_attempt += 1
         if st.button("다시 선택지로"):
             st.session_state.stage = "intro"
-            st.experimental_rerun()
+            st.rerun()
     else:
         st.info("그래 낙법 잘 치면 되겠지...")
         st.error("🪂 당신은 사망했습니다.")
@@ -55,7 +55,7 @@ elif st.session_state.stage == "window":
         if st.button("🔁 다시 시도하기"):
             st.session_state.stage = "intro"
             st.session_state.jump_attempt = 0
-            st.experimental_rerun()
+            st.rerun()
 
 # Stage: 복도
 elif st.session_state.stage == "hallway":
@@ -63,7 +63,7 @@ elif st.session_state.stage == "hallway":
     st.markdown("💀 **GAME OVER** 💀")
     if st.button("🔁 다시 시도하기"):
         st.session_state.stage = "intro"
-        st.experimental_rerun()
+        st.rerun()
 
 # Stage: 화장실
 elif st.session_state.stage == "toilet":
@@ -74,10 +74,10 @@ elif st.session_state.stage == "toilet":
             st.success("🧹 막대기(빗자루 손잡이)를 얻었다!")
             st.session_state.has_stick = True
             st.session_state.stage = "stick_action"
-            st.experimental_rerun()
+            st.rerun()
     else:
         st.session_state.stage = "stick_action"
-        st.experimental_rerun()
+        st.rerun()
 
 # Stage: 막대기 액션 선택
 elif st.session_state.stage == "stick_action":
@@ -104,7 +104,7 @@ elif st.session_state.stage == "stick_action":
         st.session_state.stage = "intro"
         st.session_state.jump_attempt = 0
         st.session_state.has_stick = False
-        st.experimental_rerun()
+        st.rerun()
 
 # Stage: 선생님을 때림
 elif st.session_state.stage == "fight":
@@ -113,7 +113,7 @@ elif st.session_state.stage == "fight":
     st.markdown("💀 **GAME OVER** 💀")
     if st.button("🔁 다시 시도하기"):
         st.session_state.stage = "intro"
-        st.experimental_rerun()
+        st.rerun()
 
 # Stage: 그냥 뛰어감
 elif st.session_state.stage == "run":
@@ -128,4 +128,4 @@ elif st.session_state.stage == "run":
         st.markdown("💀 **GAME OVER** 💀")
     if st.button("🔁 다시 시도하기"):
         st.session_state.stage = "intro"
-        st.experimental_rerun()
+        st.rerun()
