@@ -116,7 +116,6 @@ elif st.session_state.stage == "throw_choice":
             st.markdown("💀 **GAME OVER** 💀")
         else:
             st.success("📢 소리가 반대편에서 나자 선생님이 그쪽으로 달려갔다.")
-            st.balloons()
             st.markdown("🏃‍♂️ 그 틈을 타 조용히 탈출에 성공했다!")
             st.markdown("🎉 **YOU ESCAPED!**")
     if st.button("🔁 다시 시도하기"):
@@ -140,7 +139,6 @@ elif st.session_state.stage == "run":
     success = random.random() < 0.5  # 50% 확률
     if success:
         st.success("😮 선생님이 뒤돌아보지 않았다! 성공적으로 탈출!")
-        st.balloons()
         st.markdown("🏃‍♂️ **YOU ESCAPED!**")
     else:
         st.error("👨‍🏫 선생님: 야!!! 어디가!")
