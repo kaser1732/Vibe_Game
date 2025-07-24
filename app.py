@@ -44,16 +44,15 @@ if st.session_state.state == "ready":
     if st.button("🎮 시작하기"):
         st.session_state.wait_until = time.time() + random.uniform(2, 5)
         st.session_state.state = "waiting"
-        st.experimental_rerun()
+        st.rerun()  # 변경된 안전한 함수 사용
 
 elif st.session_state.state == "waiting":
-    # 사용자가 확인 버튼 누를 때까지 기다림
     st.markdown('<div class="box wait-box">🕓 준비 중입니다...<br>곧 초록불이 뜹니다</div>', unsafe_allow_html=True)
     if st.button("🟢 확인"):
         if time.time() >= st.session_state.wait_until:
             st.session_state.start_time = time.time()
             st.session_state.state = "go"
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.warning("⏳ 아직이에요! 너무 빨랐어요!")
 
@@ -62,7 +61,7 @@ elif st.session_state.state == "go":
         reaction = int((time.time() - st.session_state.start_time) * 1000)
         st.session_state.reaction_time = reaction
         st.session_state.state = "done"
-        st.experimental_rerun()
+        st.rerun()
     else:
         st.markdown('<div class="box go-box">💚 지금 클릭하세요!</div>', unsafe_allow_html=True)
 
@@ -73,4 +72,4 @@ elif st.session_state.state == "done":
         st.session_state.reaction_time = None
         st.session_state.start_time = None
         st.session_state.wait_until = None
-        st.experimental_rerun()
+        st.rerun()
