@@ -2,7 +2,6 @@ import streamlit as st
 import time
 import random
 
-# 초기 상태
 if "state" not in st.session_state:
     st.session_state.state = "ready"
     st.session_state.wait_until = None
@@ -11,7 +10,7 @@ if "state" not in st.session_state:
 
 st.title("⚡ 반응속도 테스트")
 
-# 스타일 정의
+# 스타일
 st.markdown("""
     <style>
     .click-box {
@@ -35,41 +34,29 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 상태 흐름
+# 단계별 처리
 if st.session_state.state == "ready":
     if st.button("🎮 시작하기"):
         st.session_state.wait_until = time.time() + random.uniform(2, 5)
         st.session_state.state = "waiting"
-        st.rerun()
 
 elif st.session_state.state == "waiting":
-    if time.time() >= st.session_state.wait_until:
-        st.session_state.start_time = time.time()
-        st.session_state.state = "go"
-        st.rerun()
-    else:
-        st.info("🕓 준비 중입니다...")
+    st.info("🕓 준비 중입니다... 아래 버튼을 눌러 확인")
+    if st.button("🔍 확인하기"):
+        if time.time() >= st.session_state.wait_until:
+            st.session_state.start_time = time.time()
+            st.session_state.state = "go"
 
 elif st.session_state.state == "go":
-    # 큰 박스 전체가 클릭되도록 HTML로 처리
-    st.markdown(f"""
-        <div class="click-box" onclick="fetch('{st.request.url}', {{method: 'POST'}}).then(() => window.location.reload());">
-            💚 지금 클릭하세요!
-        </div>
-    """, unsafe_allow_html=True)
-    # 사용자 클릭 감지를 위해 dummy form (Streamlit 방식)
-    with st.form("click_form", clear_on_submit=True):
-        clicked = st.form_submit_button("📥 내부 감지용 버튼 (숨김)", help="표시되지 않습니다")
-        if clicked:
-            st.session_state.reaction_time = int((time.time() - st.session_state.start_time) * 1000)
-            st.session_state.state = "done"
-            st.rerun()
+    # 박스를 클릭하면 반응 기록
+    if st.button("💚 지금 클릭하세요!", use_container_width=True):
+        st.session_state.reaction_time = int((time.time() - st.session_state.start_time) * 1000)
+        st.session_state.state = "done"
 
 elif st.session_state.state == "done":
     st.success(f"⏱ 반응속도: {st.session_state.reaction_time} ms")
     if st.button("🔁 다시하기"):
         st.session_state.state = "ready"
-        st.session_state.wait_until = None
-        st.session_state.start_time = None
         st.session_state.reaction_time = None
-        st.rerun()
+        st.session_state.start_time = None
+        st.session_state.wait_until = None
