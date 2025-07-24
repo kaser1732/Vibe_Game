@@ -2,40 +2,42 @@ import streamlit as st
 import time
 import random
 
-if "started" not in st.session_state:
-    st.session_state.started = False
-if "start_time" not in st.session_state:
-    st.session_state.start_time = 0.0
-if "message" not in st.session_state:
-    st.session_state.message = ""
-if "result" not in st.session_state:
-    st.session_state.result = None
+# 상태 초기화
+if "stage" not in st.session_state:
+    st.session_state.stage = "ready"  # ready, waiting, go, result
+    st.session_state.start_time = None
+    st.session_state.reaction_time = None
+    st.session_state.wait_until = None
 
 st.title("⚡ 반응속도 테스트")
 
-if not st.session_state.started:
+# 현재 단계에 따라 분기
+if st.session_state.stage == "ready":
     if st.button("🎮 시작하기"):
-        st.session_state.started = True
-        st.session_state.message = "준비하세요..."
-        st.session_state.result = None
-        wait_time = random.uniform(2, 5)
-        time.sleep(wait_time)
-        st.session_state.message = "💚 지금 클릭하세요!"
-        st.session_state.start_time = time.time()
-        st.experimental_rerun()
-else:
-    st.write(st.session_state.message)
-    if st.session_state.message == "💚 지금 클릭하세요!":
-        if st.button("✅ 클릭!"):
-            reaction_time = (time.time() - st.session_state.start_time) * 1000
-            st.session_state.result = f"⏱ 반응속도: {int(reaction_time)} ms"
-            st.session_state.started = False
-            st.experimental_rerun()
-    else:
-        if st.button("🚫 너무 빨라요! 다시 시작"):
-            st.session_state.result = "⚠️ 너무 빨리 눌렀습니다. 다시 시도하세요."
-            st.session_state.started = False
-            st.experimental_rerun()
+        wait = random.uniform(2, 5)
+        st.session_state.wait_until = time.time() + wait
+        st.session_state.stage = "waiting"
 
-if st.session_state.result:
-    st.markdown(st.session_state.result)
+elif st.session_state.stage == "waiting":
+    if time.time() >= st.session_state.wait_until:
+        st.session_state.start_time = time.time()
+        st.session_state.stage = "go"
+        st.experimental_rerun()
+    else:
+        st.write("🟡 준비 중입니다... 초록불이 뜨면 눌러주세요!")
+
+elif st.session_state.stage == "go":
+    st.write("💚 지금 클릭하세요!")
+    if st.button("✅ 클릭!"):
+        st.session_state.reaction_time = int((time.time() - st.session_state.start_time) * 1000)
+        st.session_state.stage = "result"
+        st.experimental_rerun()
+
+elif st.session_state.stage == "result":
+    st.success(f"⏱ 반응속도: {st.session_state.reaction_time} ms")
+    if st.button("🔁 다시하기"):
+        st.session_state.stage = "ready"
+        st.session_state.reaction_time = None
+        st.session_state.start_time = None
+        st.session_state.wait_until = None
+        st.experimental_rerun()
