@@ -40,13 +40,15 @@ if st.session_state.stage == "intro":
             st.session_state.stage = "run"
         st.rerun()
 
-# Stage: 창문
+# Stage: 창문 탈출
 elif st.session_state.stage == "window":
     if st.session_state.jump_attempt == 0:
         st.warning("여긴 4층이라서 안 될 것 같다...")
-        st.session_state.jump_attempt += 1
-        if st.button("🔙 다시 선택지로 돌아가기"):
+        if st.button("🧍 다시 선택지로 돌아간다"):
             st.session_state.stage = "intro"
+            st.rerun()
+        if st.button("그래도 시도해본다"):
+            st.session_state.jump_attempt += 1
             st.rerun()
     else:
         st.info("그래 낙법 잘 치면 되겠지...")
@@ -57,7 +59,7 @@ elif st.session_state.stage == "window":
             st.session_state.jump_attempt = 0
             st.rerun()
 
-# Stage: 복도
+# Stage: 복도로 나감
 elif st.session_state.stage == "hallway":
     st.error("👨‍🏫 선생님: 야 너 어디가?")
     st.markdown("💀 **GAME OVER** 💀")
@@ -79,7 +81,7 @@ elif st.session_state.stage == "toilet":
         st.session_state.stage = "stick_action"
         st.rerun()
 
-# Stage: 막대기 액션 선택
+# Stage: 막대기 액션
 elif st.session_state.stage == "stick_action":
     st.markdown("🧹 당신은 막대기를 들고 있다. 이제 어떻게 할까?")
     action = st.radio("막대기로 무엇을 할까?", [
@@ -99,7 +101,7 @@ elif st.session_state.stage == "stick_action":
             st.session_state.stage = "throw_choice"
             st.rerun()
 
-# Stage: 막대기 던지기 선택
+# Stage: 복도로 나가 막대기 던짐
 elif st.session_state.stage == "throw_choice":
     st.markdown("🏃 당신은 조용히 복도로 나가 막대기를 들고 있다.")
     st.markdown("선생님은 복도 끝에 서 있다. 당신의 선택은?")
