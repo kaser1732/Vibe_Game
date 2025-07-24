@@ -45,7 +45,7 @@ elif st.session_state.stage == "window":
     if st.session_state.jump_attempt == 0:
         st.warning("여긴 4층이라서 안 될 것 같다...")
         st.session_state.jump_attempt += 1
-        if st.button("다시 선택지로"):
+        if st.button("🔙 다시 선택지로 돌아가기"):
             st.session_state.stage = "intro"
             st.rerun()
     else:
@@ -84,22 +84,39 @@ elif st.session_state.stage == "stick_action":
     st.markdown("🧹 당신은 막대기를 들고 있다. 이제 어떻게 할까?")
     action = st.radio("막대기로 무엇을 할까?", [
         "천장을 쳐본다",
-        "교실 문을 딴다",
-        "거울을 깬다"
+        "거울을 깬다",
+        "막대기를 들고 복도로 나간다"
     ])
     if st.button("실행"):
         if action == "천장을 쳐본다":
             st.error("쾅쾅쾅! 선생님이 뛰어왔다!")
             st.markdown("👨‍🏫 선생님: 화장실에서 뭐 하는 거야?")
             st.markdown("💀 **GAME OVER** 💀")
-        elif action == "교실 문을 딴다":
-            st.success("✨ 교실 문이 살짝 열렸다! 아무도 눈치채지 못했다.")
-            st.balloons()
-            st.markdown("🏃‍♂️ 당신은 교실로 복귀한 척하면서 조용히 탈출에 성공했다!")
-            st.markdown("🎉 **YOU ESCAPED!**")
         elif action == "거울을 깬다":
             st.error("쨍그랑! 시끄러운 소리에 선생님이 들이닥쳤다.")
             st.markdown("💀 **GAME OVER** 💀")
+        elif action == "막대기를 들고 복도로 나간다":
+            st.session_state.stage = "throw_choice"
+            st.rerun()
+
+# Stage: 막대기 던지기 선택
+elif st.session_state.stage == "throw_choice":
+    st.markdown("🏃 당신은 조용히 복도로 나가 막대기를 들고 있다.")
+    st.markdown("선생님은 복도 끝에 서 있다. 당신의 선택은?")
+    throw = st.radio("막대기를 어디로 던질까?", [
+        "선생님 쪽으로 던진다",
+        "선생님 반대편으로 던진다"
+    ])
+    if st.button("던진다"):
+        if throw == "선생님 쪽으로 던진다":
+            st.error("선생님이 당신을 바로 봤다.")
+            st.markdown("👨‍🏫 선생님: 너 지금 뭐 하는 거야?")
+            st.markdown("💀 **GAME OVER** 💀")
+        else:
+            st.success("📢 소리가 반대편에서 나자 선생님이 그쪽으로 달려갔다.")
+            st.balloons()
+            st.markdown("🏃‍♂️ 그 틈을 타 조용히 탈출에 성공했다!")
+            st.markdown("🎉 **YOU ESCAPED!**")
     if st.button("🔁 다시 시도하기"):
         st.session_state.stage = "intro"
         st.session_state.jump_attempt = 0
