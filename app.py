@@ -1,16 +1,16 @@
 import streamlit as st
 import random
 
-# 기본 설정
+# 페이지 설정
 st.set_page_config(page_title="도박 게임 허브", page_icon="🎰")
 
-# 초기 잔액 세션 상태
+# 초기 잔액 세션 상태 설정
 if "balance" not in st.session_state:
     st.session_state.balance = 100000
 if "message" not in st.session_state:
     st.session_state.message = ""
 
-# 공통 베팅 입력
+# 공통 베팅 금액 입력
 def get_bet():
     return st.number_input("💰 베팅 금액 입력:", min_value=1, max_value=st.session_state.balance, step=1000)
 
@@ -18,7 +18,7 @@ def get_bet():
 def show_result(msg):
     st.session_state.message = f"{msg}\n💵 현재 잔액: {st.session_state.balance:,}원"
 
-# 게임 함수들
+# 게임들 정의
 def slot_machine(bet):
     symbols = ["🍒", "🔔", "🍋", "💎", "7️⃣", "🍀"]
     result = [random.choice(symbols) for _ in range(3)]
@@ -91,22 +91,25 @@ def ladder_game(bet, choice):
         msg = f"결과: {result}\n❌ 틀렸습니다."
     show_result(msg)
 
-# ---------------- UI 출력 ----------------
-st.title("🎰 도박 게임 허브 (1인용)")
-st.markdown(f"**현재 잔액: {st.session_state.balance:,}원**")
+# ---------------- UI ----------------
 
-# 파산 체크
+st.title("🎰 도박 게임 허브 (1인용)")
+
+# 💰 현재 잔액 항상 표시
+st.subheader(f"💵 현재 잔액: {st.session_state.balance:,}원")
+
+# 💥 파산 확인
 if st.session_state.balance <= 0:
     st.error("💸 파산! 잔액이 0원입니다.")
-    st.warning("📞 도박 중독이 의심되면 도움을 요청하세요.\n상담번호: **☎️ 1336**")
-    st.markdown("[👉 상담센터 홈페이지 바로가기](https://www.ncadd.or.kr)", unsafe_allow_html=True)
+    st.warning("📞 도박 중독이 의심되면 도움을 요청하세요.\n**상담번호: ☎️ 1336**")
+    st.markdown("[👉 도박문제관리센터 바로가기](https://www.ncadd.or.kr)", unsafe_allow_html=True)
     st.stop()
 
-# 게임 선택
-game = st.selectbox("🎮 게임 선택", ["슬롯머신", "하이/로우", "주사위 홀짝", "룰렛", "홀짝 합", "사다리"])
+# 🎮 게임 선택
+game = st.selectbox("게임을 선택하세요", ["슬롯머신", "하이/로우", "주사위 홀짝", "룰렛", "홀짝 합", "사다리"])
 bet = get_bet()
 
-# 게임별 인터페이스
+# 게임별 입력 및 실행
 if game == "슬롯머신":
     if st.button("🎰 슬롯 돌리기"):
         slot_machine(bet)
@@ -137,6 +140,6 @@ elif game == "사다리":
     if st.button("🪜 선택하기"):
         ladder_game(bet, choice)
 
-# 결과 메시지 출력
+# 결과 출력
 if st.session_state.message:
     st.success(st.session_state.message)
