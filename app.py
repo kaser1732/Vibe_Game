@@ -1,142 +1,72 @@
 import streamlit as st
+import time
 import random
 
-st.set_page_config(page_title="도박 게임 허브", page_icon="🎰")
+st.set_page_config(layout="centered")
 
-# 초기 세션
-if "balance" not in st.session_state:
-    st.session_state.balance = 100000
-if "message" not in st.session_state:
-    st.session_state.message = ""
+st.title("🎵 리듬 게임 - 타이밍을 맞춰 클릭하세요!")
+st.markdown("타이밍이 맞을 때 `클릭`을 누르세요! 총 10박자 🎶")
 
-# 결과 출력 함수
-def show_result(msg):
-    st.session_state.message = f"{msg}\n💵 현재 잔액: {st.session_state.balance:,}원"
-    st.rerun()
+if "step" not in st.session_state:
+    st.session_state.step = 0
+    st.session_state.score = 0
+    st.session_state.logs = []
+    st.session_state.start_time = 0
+    st.session_state.beat_times = []
 
-# 베팅 입력
-def get_bet():
-    return st.number_input("💰 베팅 금액:", min_value=1, max_value=st.session_state.balance, step=1000)
+# 게임 시작
+if st.button("게임 시작", key="start_btn"):
+    st.session_state.step = 0
+    st.session_state.score = 0
+    st.session_state.logs = []
+    st.session_state.beat_times = []
 
-# 게임 함수들
-def slot_machine(bet):
-    symbols = ["🍒", "🔔", "🍋", "💎", "7️⃣", "🍀"]
-    result = [random.choice(symbols) for _ in range(3)]
-    if result.count(result[0]) == 3:
-        st.session_state.balance += bet * 4
-        msg = f"{' | '.join(result)}\n🎉 잭팟! 5배 당첨!"
-    elif result.count(result[0]) == 2 or result.count(result[1]) == 2:
-        st.session_state.balance += bet
-        msg = f"{' | '.join(result)}\n😎 두 개 일치! 2배 당첨!"
+    beat_interval = 1.5  # 박자 간격
+    st.session_state.start_time = time.time()
+
+    # 리듬 10박자 타이밍 생성
+    for i in range(10):
+        st.session_state.beat_times.append(st.session_state.start_time + beat_interval * i)
+
+    st.experimental_rerun()
+
+# 게임 진행 중
+if st.session_state.beat_times and st.session_state.step < len(st.session_state.beat_times):
+    next_beat = st.session_state.beat_times[st.session_state.step]
+    now = time.time()
+
+    time_left = next_beat - now
+
+    if time_left <= 0:
+        st.write(f"🎯 박자 {st.session_state.step + 1}!")
+
+        if st.button("💥 지금 클릭!", key=f"click_{st.session_state.step}"):
+            click_time = time.time()
+            delta = abs(click_time - next_beat)
+
+            if delta < 0.2:
+                result = "🎯 Perfect"
+                st.session_state.score += 100
+            elif delta < 0.4:
+                result = "👍 Good"
+                st.session_state.score += 50
+            else:
+                result = "❌ Miss"
+            st.session_state.logs.append((st.session_state.step + 1, result))
+            st.session_state.step += 1
+            st.experimental_rerun()
+        else:
+            # 자동 Miss 처리
+            if time_left < -0.6:
+                st.session_state.logs.append((st.session_state.step + 1, "❌ Miss"))
+                st.session_state.step += 1
+                st.experimental_rerun()
     else:
-        st.session_state.balance -= bet
-        msg = f"{' | '.join(result)}\n💸 꽝입니다."
-    show_result(msg)
-
-def high_or_low(bet, guess):
-    user = random.randint(1, 13)
-    comp = random.randint(1, 13)
-    if (guess == "high" and comp > user) or (guess == "low" and comp < user):
-        st.session_state.balance += bet
-        msg = f"당신: {user}, 상대: {comp}\n🎉 맞췄습니다!"
-    elif comp == user:
-        msg = f"당신: {user}, 상대: {comp}\n😐 무승부!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"당신: {user}, 상대: {comp}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def dice_game(bet, guess):
-    roll = random.randint(1, 6)
-    if (roll % 2 == 0 and guess == "even") or (roll % 2 == 1 and guess == "odd"):
-        st.session_state.balance += bet
-        msg = f"🎲 주사위: {roll}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"🎲 주사위: {roll}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def roulette(bet, choice):
-    num = random.randint(0, 36)
-    color = random.choice(["red", "black"])
-    if choice.isdigit() and int(choice) == num:
-        st.session_state.balance += bet * 34
-        msg = f"🎯 룰렛: {num} ({color})\n🎉 숫자 정답! 35배!"
-    elif choice == color:
-        st.session_state.balance += bet
-        msg = f"🎯 룰렛: {num} ({color})\n🎉 색상 정답! 2배!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"🎯 룰렛: {num} ({color})\n❌ 틀렸습니다."
-    show_result(msg)
-
-def odd_even_sum(bet, user_num, guess):
-    comp = random.randint(1, 9)
-    total = user_num + comp
-    if (total % 2 == 0 and guess == "even") or (total % 2 == 1 and guess == "odd"):
-        st.session_state.balance += bet
-        msg = f"당신: {user_num}, 컴: {comp} → 합: {total}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"당신: {user_num}, 컴: {comp} → 합: {total}\n❌ 틀렸습니다."
-    show_result(msg)
-
-def ladder_game(bet, choice):
-    result = random.choice(["left", "right"])
-    if choice == result:
-        st.session_state.balance += bet
-        msg = f"결과: {result}\n🎉 맞췄습니다!"
-    else:
-        st.session_state.balance -= bet
-        msg = f"결과: {result}\n❌ 틀렸습니다."
-    show_result(msg)
-
-# 🖥️ UI
-st.title("🎰 도박 게임 허브 (1인용)")
-st.subheader(f"💵 현재 잔액: {st.session_state.balance:,}원")
-
-# 🛑 파산 시 안내
-if st.session_state.balance <= 0:
-    st.error("💸 파산! 잔액이 0원입니다.")
-    st.warning("📞 도박 중독이 의심되면 도움을 요청하세요. 상담번호: ☎️ 1336")
-    st.markdown("[👉 도박문제관리센터 바로가기](https://www.ncadd.or.kr)", unsafe_allow_html=True)
-    st.stop()
-
-# 게임 선택
-game = st.selectbox("🎮 게임을 선택하세요", ["슬롯머신", "하이/로우", "주사위 홀짝", "룰렛", "홀짝 합", "사다리"])
-bet = get_bet()
-
-# 게임 실행 UI
-if game == "슬롯머신":
-    if st.button("🎰 슬롯 돌리기"):
-        slot_machine(bet)
-
-elif game == "하이/로우":
-    guess = st.radio("상대가 높을까 낮을까?", ["high", "low"])
-    if st.button("🃏 예측하기"):
-        high_or_low(bet, guess)
-
-elif game == "주사위 홀짝":
-    guess = st.radio("홀수 or 짝수?", ["odd", "even"])
-    if st.button("🎲 던지기"):
-        dice_game(bet, guess)
-
-elif game == "룰렛":
-    choice = st.text_input("숫자(0~36) 또는 색상(red/black):").lower()
-    if st.button("🎡 돌리기"):
-        roulette(bet, choice)
-
-elif game == "홀짝 합":
-    user_num = st.number_input("당신의 숫자 (1~9)", min_value=1, max_value=9, step=1)
-    guess = st.radio("합은 홀수 or 짝수?", ["odd", "even"])
-    if st.button("⚖️ 예측하기"):
-        odd_even_sum(bet, user_num, guess)
-
-elif game == "사다리":
-    choice = st.radio("사다리 방향 선택", ["left", "right"])
-    if st.button("🪜 선택하기"):
-        ladder_game(bet, choice)
+        st.write(f"⏱️ 다음 박자까지 {time_left:.2f}초...")
 
 # 결과 출력
-if st.session_state.message:
-    st.success(st.session_state.message)
+if st.session_state.step == 10:
+    st.subheader("🎉 결과")
+    for beat, result in st.session_state.logs:
+        st.write(f"{beat}박자 → {result}")
+    st.markdown(f"**총점: {st.session_state.score}점**")
